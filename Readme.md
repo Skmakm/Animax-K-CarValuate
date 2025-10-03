@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="Project Logo" width="150">
+  <img src="./assets/logo.png" alt="Project Logo" width="250">
 </p>
 
 #  Animax K CarValuate:A Car Price Estimation Web App
