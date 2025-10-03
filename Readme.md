@@ -58,29 +58,26 @@ streamlit run app.py
 ```
 
 ## 📂 Project Structure
+
 Car-Price-Predictor/
-├── .venv/ # Virtual environment folder (ignored by git)
-├── assets/ # Folder for images, css, etc.
-├── pycache/ # Python cache (ignored by git)
-├── app.py # Main Streamlit application script
-├── auth.py # Authentication logic script
-├── Car.csv # Primary dataset used for training
+├── .venv/                  # Virtual environment folder (ignored by git)
+├── assets/                 # Folder for images, css, etc.
+├── __pycache__/            # Python cache (ignored by git)
+├── app.py                  # Main Streamlit application script
+├── auth.py                 # Authentication logic script
+├── Car.csv                 # Primary dataset used for training
 ├── Car Price Predictor.ipynb # Jupyter Notebook for EDA and model training
 ├── LinearRegressionModel.pkl # Pre-trained machine learning model
-├── prediction_history.csv # Log of predictions (ignored by git)
-├── Quikr_car.csv # Secondary dataset
-├── requirements.txt # List of Python dependencies
-├── users.json # User credentials (ignored by git)
-└── README.md # This file
+├── prediction_history.csv  # Log of predictions (ignored by git)
+├── Quikr_car.csv           # Secondary dataset
+├── requirements.txt        # List of Python dependencies
+├── users.json              # User credentials (ignored by git)
+└── README.md               # This file
 
-yaml
-Copy code
+## 💡 Future Enhancements
 
----
-
-## 📌 Future Enhancements
-- Enhance UI/UX with improved design and responsiveness.  
-- Integrate multiple ML models (Random Forest, XGBoost, etc.) for better accuracy.  
-- Add visualization dashboard for deeper insights.  
-- Implement role-based authentication (admin/user).  
-- Deploy on **Streamlit Cloud, Heroku, or AWS** for public access. 
+* Enhance UI/UX with improved design and responsiveness.
+* Integrate multiple ML models (Random Forest, XGBoost, etc.) for better accuracy.
+* Add a visualization dashboard for deeper insights.
+* Implement role-based authentication (admin/user).
+* Deploy on Streamlit Cloud, Heroku, or AWS for public access.
