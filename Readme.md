@@ -1,4 +1,8 @@
-# 🚗 Animax K CarValuate:A Car Price Estimation Web App
+<p align="center">
+  <img src="./assets/logo.png" alt="Project Logo" width="150">
+</p>
+
+#  Animax K CarValuate:A Car Price Estimation Web App
 
 A user-friendly web application built with **Streamlit** that predicts the price of used cars using a **machine learning model**.  
 This project demonstrates the complete pipeline of **data cleaning, model training, and deploying the model** as an interactive web app.
