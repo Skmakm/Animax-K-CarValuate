@@ -1,4 +1,4 @@
-# 🚗 Car Price Prediction Web App
+# 🚗 Animax K CarValuate:A Car Price Estimation Web App
 
 A user-friendly web application built with **Streamlit** that predicts the price of used cars using a **machine learning model**.  
 This project demonstrates the complete pipeline of **data cleaning, model training, and deploying the model** as an interactive web app.
@@ -36,7 +36,7 @@ cd Car-Price-Predictor
 ```
 (Replace YOUR_USERNAME with your GitHub username)
 
-3. Create a Virtual Environment
+### 3. Create a Virtual Environment
 ```arduino
 # Create virtual environment
 python -m venv venv
@@ -47,19 +47,18 @@ venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
 ```
-4. Install Dependencies
+### 4. Install Dependencies
 ```arduino
 pip install -r requirements.txt
 ```
 
-5. Run the Application
+### 5. Run the Application
 ```arduino
 streamlit run app.py
 ```
 
 ## 📂 Project Structure
-
-Car-Price-Predictor/
+```plaintext
 ├── .venv/                  # Virtual environment folder (ignored by git)
 ├── assets/                 # Folder for images, css, etc.
 ├── __pycache__/            # Python cache (ignored by git)
@@ -73,6 +72,7 @@ Car-Price-Predictor/
 ├── requirements.txt        # List of Python dependencies
 ├── users.json              # User credentials (ignored by git)
 └── README.md               # This file
+```
 
 ## 💡 Future Enhancements
 
