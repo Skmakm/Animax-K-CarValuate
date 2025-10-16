@@ -3,12 +3,10 @@ st.set_page_config(page_title="Animax K CarValuate", page_icon="🚗", layout="w
 
 from auth import run_authentication
 
-# Run authentication first
+
 run_authentication()
 if not st.session_state.get("authenticated", False):
     st.stop()
-
-# --- rest of your app here ---
 
 
 
@@ -28,21 +26,19 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 
-# Plotly for interactive charts
+
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Option menu for nicer sidebar navigation
+
 from streamlit_option_menu import option_menu
 
 
-# filenames (unchanged business logic)
 MODEL_FILE = "LinearRegressionModel.pkl"
 DATA_FILE = "Cars.csv"
 HISTORY_FILE = "prediction_history.csv"
 LOGO_FILE = "assets/logo.png"  # Place your logo here
 
-# -------------------- SAFETY CHECKS (files must exist) --------------------
 if not os.path.exists(MODEL_FILE):
     st.error(f"Model file not found: {MODEL_FILE}. Place your trained model there.")
     st.stop()
@@ -50,14 +46,11 @@ if not os.path.exists(DATA_FILE):
     st.error(f"Dataset not found: {DATA_FILE}. Place your dataset there.")
     st.stop()
 
-# -------------------- LOAD MODEL & DATA --------------------
 with open(MODEL_FILE, "rb") as f:
     model = pickle.load(f)
 
-# Read dataset
 df = pd.read_csv(DATA_FILE)
 
-# -------------------- THEME / PALETTE --------------------
 PALETTE = {
     "primary": "#2b6cb0",
     "accent": "#38a169",
@@ -68,7 +61,6 @@ PALETTE = {
     "table_even": colors.lightgrey,
 }
 
-# Minimal Matplotlib styling (used only for PDF figures)
 plt.rcParams.update({
     "figure.facecolor": "white",
     "axes.edgecolor": "#333333",
@@ -79,7 +71,6 @@ plt.rcParams.update({
     "grid.color": "#e6e6e6",
 })
 
-# -------------------- GLOBAL CSS --------------------
 st.markdown(f"""
 <style>
 /* Card look for KPI containers */
@@ -105,7 +96,6 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------- HELPERS (business logic preserved) --------------------
 
 def predict_price_from_features(features_df):
     """Return predicted price in lakhs (float)."""
@@ -177,7 +167,7 @@ def styled_table_for_pdf(df_table):
     ]))
     return t
 
-# -------------------- HISTORY (session + csv) --------------------
+
 if "history" not in st.session_state:
     if os.path.exists(HISTORY_FILE):
         try:
@@ -193,7 +183,7 @@ def save_to_history(record):
     Caps the predicted price (lakhs) to a safe upper bound to avoid storing insane values.
     """
     try:
-        # cap predicted price in lakhs (500 lakhs = 5 Cr)
+        
         max_lakhs = 500
         val = float(record.get("Predicted Price (₹ lakhs)", 0))
         record["Predicted Price (₹ lakhs)"] = round(min(val, max_lakhs), 2)
@@ -203,13 +193,13 @@ def save_to_history(record):
     st.session_state["history"].insert(0, record)
     pd.DataFrame(st.session_state["history"]).to_csv(HISTORY_FILE, index=False)
 
-# -------------------- SIDEBAR + LOGO + NAVIGATION --------------------
+
 with st.sidebar:
-    # show logo if available
+    
     if os.path.exists(LOGO_FILE):
         st.image(LOGO_FILE, width=160)
     st.markdown("### Animax K CarValuate")
-    # Option menu with icons
+    
     choice = option_menu(
         menu_title=None,
         options=[
@@ -227,9 +217,8 @@ with st.sidebar:
         default_index=0,
     )
 
-# -------------------- HOME DASHBOARD --------------------
 if choice == "Home Dashboard":
-    # Show logo + title at top of main page 
+    
     if os.path.exists(LOGO_FILE): 
         col_logo, col_title = st.columns([1, 3])
         with col_logo: 
@@ -241,11 +230,11 @@ if choice == "Home Dashboard":
         st.markdown("## Animax K CarValuate")
         st.markdown("<p class='small-muted'>AI-powered valuation, comparisons, forecasting, and professional reports.</p>", unsafe_allow_html=True)
         
-    # Landing KPIs and company-level charts
+    
     st.markdown("<div class='card'><h2>Animax K CarValuate</h2><p class='small-muted'>AI-powered valuation, comparisons, forecasting, and professional reports.</p></div>", unsafe_allow_html=True)
     st.title("Market Overview")
 
-    # KPI cards
+
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown(f"<div class='card'><h4>Vehicles in Dataset</h4><div class='metric-big'>{len(df):,}</div></div>", unsafe_allow_html=True)
@@ -258,28 +247,27 @@ if choice == "Home Dashboard":
             top_company = "N/A"
         st.markdown(f"<div class='card'><h4>Top Company</h4><div class='metric-big'>{top_company}</div></div>", unsafe_allow_html=True)
 
-    # Top companies bar
+    
     st.subheader("Average Price by Company (Top 10)")
     avg_company = df.groupby("Company")["Price"].mean().sort_values(ascending=False).head(10).reset_index()
     fig = px.bar(avg_company, x="Company", y="Price", text="Price", title="Top 10 Companies by Avg Price")
     fig.update_layout(margin=dict(t=40, l=10, r=10))
     st.plotly_chart(fig, use_container_width=True)
 
-    # Depreciation trend by year
+    
     st.subheader("Depreciation Trend (Avg Price by Year)")
     avg_year = df.groupby("Year")["Price"].mean().reset_index()
     fig2 = px.line(avg_year, x="Year", y="Price", markers=True, title="Average Price by Year")
     fig2.update_layout(margin=dict(t=40, l=10, r=10))
     st.plotly_chart(fig2, use_container_width=True)
 
-# -------------------- SINGLE CAR PREDICTION --------------------
+
 elif choice == "Single Car Prediction":
     st.header("Single Car Prediction")
     st.markdown("Enter details below. Tooltips provide help for input fields.")
     st.sidebar.subheader("Prediction inputs")
 
-    # Use the existing dataset values where appropriate, but keep preserved keys from original file.
-    # NOTE: column names in original dataset may vary; adjust input options to match your dataset.
+    
     company = st.sidebar.selectbox("Company", sorted(df["Company"].unique()))
     car_name = st.sidebar.selectbox("Model", sorted(df[df["Company"] == company]["Name"].unique()))
     location = st.sidebar.selectbox("Location", sorted(df["Location"].unique()))
@@ -330,14 +318,14 @@ elif choice == "Single Car Prediction":
                 fig_cmp.update_layout(margin=dict(t=30, b=10, l=10, r=10))
                 st.plotly_chart(fig_cmp, use_container_width=True)
 
-# -------------------- COMPARE MULTIPLE CARS --------------------
+
 elif choice == "Compare Multiple Cars":
     st.header("Compare Multiple Cars")
     st.markdown("Provide details for each car in the sidebar-like inputs below.")
 
     num_cars = st.number_input("Number of cars to compare", 1, 5, 2)
     car_inputs = []
-    # We will present inputs inline (not in sidebar) to make comparison easier
+    
     for i in range(int(num_cars)):
         st.markdown(f"**Car {i+1} details**")
         c1, c2, c3 = st.columns(3)
@@ -351,7 +339,7 @@ elif choice == "Compare Multiple Cars":
             fuel_i = st.selectbox(f"Fuel (Car {i+1})", df["Fuel_type"].unique(), key=f"f{i}")
             owner_i = st.selectbox(f"Owner (Car {i+1})", df["Owner"].unique(), key=f"o{i}")
         car_inputs.append({
-            "Name": model_i, "Label": "", "Location": "",  # label/location optional for quick compare
+            "Name": model_i, "Label": "", "Location": "",  
             "Kms_driven": kms_i, "Fuel_type": fuel_i, "Owner": owner_i,
             "Year": year_i, "Company": company_i
         })
@@ -369,13 +357,12 @@ elif choice == "Compare Multiple Cars":
         st.subheader("Comparison Results")
         st.dataframe(res_df, use_container_width=True)
 
-        # Plotly bar for comparison
+        
         fig_bar = px.bar(res_df, x="Model", y="Predicted Price (₹ lakhs)", text="Predicted Price (₹ lakhs)",
                          title="Predicted Prices Comparison")
         fig_bar.update_layout(margin=dict(t=30, b=10, l=10, r=10))
         st.plotly_chart(fig_bar, use_container_width=True)
 
-# -------------------- PRICE TRENDS & FORECASTING --------------------
 elif choice == "Price Trends & Forecasting":
     st.header("Price Trends & Forecasting")
     st.markdown("View historical average prices and forecast future years using a simple linear model (good for quick estimates).")
@@ -394,11 +381,11 @@ elif choice == "Price Trends & Forecasting":
     if hist.empty:
         st.warning("Not enough historical data to display trends.")
     else:
-        # Plotly interactive line
+        
         fig = px.line(hist, x="Year", y="Price", markers=True, title="Historical Average Price by Year")
         st.plotly_chart(fig, use_container_width=True)
 
-        # Forecast if >= 3 years available
+        
         if len(hist) >= 3:
             lr = LinearRegression().fit(hist[["Year"]].values, hist["Price"].values)
             last_year = int(hist["Year"].max())
@@ -413,7 +400,7 @@ elif choice == "Price Trends & Forecasting":
         else:
             st.info("At least 3 years of historical data required for forecasting.")
 
-# -------------------- LOAN / EMI CALCULATOR --------------------
+
 elif choice == "Loan/EMI Calculator":
     st.header("Loan / EMI Calculator")
     st.markdown("Estimate EMI and view amortization schedule.")
@@ -445,7 +432,7 @@ elif choice == "Loan/EMI Calculator":
     c3.metric("Total Interest (₹)", f"{total_interest:,.0f}")
 
     emi_df = pd.DataFrame(schedule)
-    # Plotly balance chart
+    
     fig_bal = px.line(emi_df, x="Month", y="Balance", title="Loan Balance Over Time", markers=True)
     st.plotly_chart(fig_bal, use_container_width=True)
 
@@ -454,7 +441,6 @@ elif choice == "Loan/EMI Calculator":
     st.download_button("Download EMI Schedule (CSV)", data=emi_df.to_csv(index=False).encode("utf-8"),
                        file_name="emi_schedule.csv", mime="text/csv")
 
-# -------------------- MAINTENANCE COST ESTIMATOR --------------------
 elif choice == "Maintenance Cost Estimator":
     st.header("Maintenance Cost Estimator")
     st.markdown("Estimate annual maintenance cost based on assumptions.")
@@ -473,7 +459,7 @@ elif choice == "Maintenance Cost Estimator":
     car_age = st.slider("Car Age (years)", 0, 20, 3)
     mileage = st.number_input("Annual Mileage (km)", min_value=0, max_value=300000, value=15000, step=1000)
 
-    # Calculation (same as original logic)
+    
     base_cost = 0.025 * car_price
     age_factor = base_cost * (0.05 * car_age)
     mileage_factor = base_cost * (0.1 if mileage > 15000 else 0.05)
@@ -494,12 +480,12 @@ elif choice == "Maintenance Cost Estimator":
         fig_proj = px.bar(proj_df, x="Years Ahead", y="Projected Cost (₹)", title="Maintenance Cost Projection (Next 5 Years)")
         st.plotly_chart(fig_proj, use_container_width=True)
 
-# -------------------- CAR VALUATION REPORT (PDF) --------------------
+
 elif choice == "Car Valuation Report":
     st.header("Car Valuation Report")
     st.markdown("Use inputs to generate a branded PDF valuation report (includes charts).")
 
-    # Inputs (similar to earlier)
+    
     company = st.selectbox("Company", sorted(df["Company"].unique()))
     car_name = st.selectbox("Model", sorted(df[df["Company"] == company]["Name"].unique()))
     location = st.selectbox("Location", sorted(df["Location"].unique()))
@@ -529,7 +515,7 @@ elif choice == "Car Valuation Report":
             else:
                 predicted_price_rupees = cap_rupee_value(int(price_lakhs * 100_000), cap=max(dynamic_price_cap_rupees(), 50_000_000))
 
-                # Maintenance estimates reused
+                
                 base_cost = 0.025 * predicted_price_rupees
                 age_factor = base_cost * (0.05 * maint_age)
                 mileage_factor = base_cost * (0.1 if maint_mileage > 15000 else 0.05)
@@ -538,13 +524,12 @@ elif choice == "Car Valuation Report":
                 maint_costs = [annual_cost * (1 + 0.08 * y) for y in years_arr]
                 maint_df = pd.DataFrame({"Years Ahead": years_arr, "Projected Cost (₹)": np.round(maint_costs, 0)})
 
-                # EMI calculation
+                
                 loan_amount = predicted_price_rupees * (report_loan_percent / 100)
                 emi_val, emi_schedule = generate_emi_schedule(loan_amount, report_interest, report_tenure)
                 emi_df_report = pd.DataFrame(emi_schedule)
 
-                # Matplotlib charts for embedding in PDF
-                # Maintenance chart
+                
                 fig_maint, ax_m = plt.subplots()
                 ax_m.bar(maint_df["Years Ahead"], maint_df["Projected Cost (₹)"], color=PALETTE["highlight"])
                 ax_m.set_title("Maintenance Cost Projection (Next 5 Years)")
@@ -553,7 +538,7 @@ elif choice == "Car Valuation Report":
                 ax_m.grid(axis="y", linestyle="--", linewidth=0.5)
                 maint_buf = save_fig_to_bytes(fig_maint)
 
-                # Loan balance chart
+                
                 fig_loan, ax_l = plt.subplots()
                 ax_l.plot(emi_df_report["Month"], emi_df_report["Balance"], marker="o", color=PALETTE["primary"])
                 ax_l.set_title("Loan Balance Over Time")
@@ -562,7 +547,7 @@ elif choice == "Car Valuation Report":
                 ax_l.grid(True, linestyle="--", linewidth=0.5)
                 loan_buf = save_fig_to_bytes(fig_loan)
 
-                # Historical price trend for model (if available)
+                
                 hist = df[df["Name"] == car_name].groupby("Year")["Price"].mean().reset_index()
                 if not hist.empty:
                     fig_price, ax_p = plt.subplots()
@@ -575,7 +560,7 @@ elif choice == "Car Valuation Report":
                 else:
                     price_buf = None
 
-                # Build PDF with ReportLab
+                
                 buffer = io.BytesIO()
                 doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
                 styles = getSampleStyleSheet()
@@ -584,7 +569,7 @@ elif choice == "Car Valuation Report":
                 normal = styles["Normal"]
 
                 elements = []
-                # Cover with logo
+                
                 if os.path.exists(LOGO_FILE):
                     elements.append(RLImage(LOGO_FILE, width=2*inch, height=2*inch))
                 elements.append(Paragraph("Car Valuation Report", styleH))
@@ -595,7 +580,7 @@ elif choice == "Car Valuation Report":
                 elements.append(Paragraph(f"Predicted Price: ₹ {price_lakhs:,.2f} lakhs (₹ {predicted_price_rupees:,.0f})", normal))
                 elements.append(PageBreak())
 
-                # TOC and sections (similar to original)
+            
                 elements.append(Paragraph("Table of Contents", styleH2))
                 toc = ["1. Valuation & Market Comparison", "2. Recommendations", "3. Price Trends (chart)",
                        "4. Maintenance (table + chart)", "5. Loan / EMI (table + chart)"]
@@ -603,7 +588,7 @@ elif choice == "Car Valuation Report":
                     elements.append(Paragraph(line, normal))
                 elements.append(PageBreak())
 
-                # Valuation & market comparison
+                
                 elements.append(Paragraph("1. Valuation & Market Comparison", styleH2))
                 overall_avg = df["Price"].mean()
                 company_avg = df[df["Company"] == company]["Price"].mean() if company in df["Company"].unique() else np.nan
@@ -615,7 +600,7 @@ elif choice == "Car Valuation Report":
                 elements.append(styled_table_for_pdf(val_table))
                 elements.append(PageBreak())
 
-                # Recommendations
+            
                 elements.append(Paragraph("2. Recommendations", styleH2))
                 tips = []
                 if price_lakhs > company_avg:
@@ -632,7 +617,7 @@ elif choice == "Car Valuation Report":
                     elements.append(Paragraph(f"- {t}", normal))
                 elements.append(PageBreak())
 
-                # Price trends (chart)
+            
                 elements.append(Paragraph("3. Price Trends", styleH2))
                 if price_buf:
                     elements.append(RLImage(price_buf, width=6.5*inch, height=3*inch))
@@ -640,14 +625,14 @@ elif choice == "Car Valuation Report":
                     elements.append(Paragraph("No historical price trend available for this model.", normal))
                 elements.append(PageBreak())
 
-                # Maintenance
+            
                 elements.append(Paragraph("4. Maintenance", styleH2))
                 elements.append(styled_table_for_pdf(maint_df.rename(columns={"Years Ahead": "Years Ahead", "Projected Cost (₹)": "Projected Cost (₹)"})))
                 elements.append(Paragraph(" ", normal))
                 elements.append(RLImage(maint_buf, width=6.5*inch, height=3*inch))
                 elements.append(PageBreak())
 
-                # EMI
+            
                 elements.append(Paragraph("5. Loan / EMI Summary", styleH2))
                 emi_summary = pd.DataFrame({
                     "Metric": ["Loan Amount (₹)", "Monthly EMI (₹)", "Total Payment (₹)", "Total Interest (₹)"],
@@ -660,7 +645,7 @@ elif choice == "Car Valuation Report":
                 elements.append(Paragraph(" ", normal))
                 elements.append(RLImage(loan_buf, width=6.5*inch, height=3*inch))
 
-                # Finalize PDF
+                
                 doc.build(elements)
                 pdf_value = buffer.getvalue()
                 buffer.close()
@@ -670,7 +655,7 @@ elif choice == "Car Valuation Report":
                                    file_name=f"car_valuation_report_{company}_{car_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
                                    mime="application/pdf")
 
-# -------------------- MARKET INSIGHTS & HISTORY --------------------
+
 elif choice == "Market Insights & History":
     st.header("Market Insights & Prediction History")
     st.sidebar.subheader("Market filters (insights)")
@@ -714,7 +699,7 @@ elif choice == "Market Insights & History":
         with tab_hist1:
             st.dataframe(history_df, use_container_width=True)
 
-        # prepare history PDF for download tab only once
+
         buf_hist = io.BytesIO()
         doc_h = SimpleDocTemplate(buf_hist, pagesize=letter)
         styles = getSampleStyleSheet()
@@ -741,5 +726,5 @@ elif choice == "Market Insights & History":
     else:
         st.info("No saved predictions yet. Make a prediction to add to history.")
 
-# -------------------- FOOTER --------------------
-st.markdown('<div class="footer">© 2025 Animax K CarValuate | Powered by Animax K & Streamlit</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="footer">© 2025 Animax K CarValuate ', unsafe_allow_html=True)
